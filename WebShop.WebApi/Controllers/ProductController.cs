@@ -41,5 +41,32 @@ namespace WebShop.WebApi.Controllers
                     "Error retrieving data from the database");
             }
         }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ProductDto>> GetItem(int id)
+        {
+            try
+            {
+                var product = await _productRepository.GetItem(id);
+                
+
+                if (product == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    var productCategory = await _productRepository.GetCategory(product.CategoryId);
+
+                    var productDtos = product.ConvertToDto(productCategory);
+
+                    return Ok(productDtos);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
     }
 }
