@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.WebEncoders.Testing;
 using ShopOnline.Models.DTOs;
 using WebShop.WebApi.Data;
 using WebShop.WebApi.Entites;
@@ -43,14 +44,32 @@ namespace WebShop.WebApi.Repositories
             return null;
         }
 
-        public Task<CartItem> UpdateQuantity(int id, CartItemQuantityUpdateDto cartItemQuantityUpdateDto)
+        public async Task<CartItem> UpdateQuantity(int id, CartItemQuantityUpdateDto cartItemQuantityUpdateDto)
         {
-            throw new NotImplementedException();
+            var item = await _shopOnlineDbContext.CartItems.FindAsync(id);
+
+            if (item != null)
+            {
+                item.Quantity = cartItemQuantityUpdateDto.Quantity;
+                await _shopOnlineDbContext.SaveChangesAsync();
+                return item;
+            }
+
+            return null;
         }
 
-        public Task<CartItem> DeleteItem(int id)
+        public async Task<CartItem> DeleteItem(int id)
         {
-            throw new NotImplementedException();
+            var item = await _shopOnlineDbContext.CartItems.FindAsync(id);
+
+            if (item != null)
+            {
+                _shopOnlineDbContext.CartItems.Remove(item);
+                await _shopOnlineDbContext.SaveChangesAsync();
+            }
+
+            return item;
+
         }
 
         public async Task<CartItem> GetItem(int id)

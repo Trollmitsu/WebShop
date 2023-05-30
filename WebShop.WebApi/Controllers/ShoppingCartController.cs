@@ -104,5 +104,55 @@ namespace WebShop.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<CartItemDto>> DeleteItem(int id)
+        {
+            try
+            {
+                var cartItem = await _shoppingCartRepository.DeleteItem(id);
+
+                if (cartItem == null)
+                {
+                    return NotFound();
+                }
+
+                var product = await _productRepository.GetItem(cartItem.ProductId);
+
+                if (product == null)
+                    return NotFound();
+
+                var cartItemDto = cartItem.ConvertToDto(product);
+
+                return Ok(cartItemDto);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult<CartItemDto>> UpdateQuantity(int id,
+            CartItemQuantityUpdateDto cartItemQuantityUpdateDto)
+        {
+            try
+            {
+                var cartItem = await _shoppingCartRepository.UpdateQuantity(id, cartItemQuantityUpdateDto);
+                if (cartItem == null)
+                {
+                    return NotFound();
+                }
+
+                var product = await _productRepository.GetItem(cartItem.ProductId);
+                var cartItemDto = cartItem.ConvertToDto(product);
+                return Ok(cartItemDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
     }
 }

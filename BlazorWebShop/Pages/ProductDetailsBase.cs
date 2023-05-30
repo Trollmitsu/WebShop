@@ -38,7 +38,7 @@ namespace BlazorWebShop.Pages
         {
             try
             {
-                //var cartItemDto = await ShoppingCartService.AddItem(cartItemToAddDto);
+                var cartItemDto = await ShoppingCartService.AddItem(cartItemToAddDto);
                 NavigationManager.NavigateTo("/ShoppingCart");
             }
             catch (Exception e)
