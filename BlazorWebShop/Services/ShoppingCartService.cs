@@ -9,17 +9,20 @@ namespace BlazorWebShop.Services
 {
     public class ShoppingCartService : IShoppingCartService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient httpClient;
+
+        public event Action<int> OnShoppingCartChanged;
 
         public ShoppingCartService(HttpClient httpClient)
         {
-            _httpClient = httpClient;
+            this.httpClient = httpClient;
         }
+
         public async Task<CartItemDto> AddItem(CartItemToAddDto cartItemToAddDto)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync<CartItemToAddDto>("api/ShoppingCart", cartItemToAddDto);
+                var response = await httpClient.PostAsJsonAsync<CartItemToAddDto>("api/ShoppingCart", cartItemToAddDto);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -49,7 +52,7 @@ namespace BlazorWebShop.Services
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/ShoppingCart/{id}");
+                var response = await httpClient.DeleteAsync($"api/ShoppingCart/{id}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -64,13 +67,11 @@ namespace BlazorWebShop.Services
             }
         }
 
-       
-
         public async Task<List<CartItemDto>> GetItems(int userId)
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/ShoppingCart/{userId}/GetItems");
+                var response = await httpClient.GetAsync($"api/ShoppingCart/{userId}/GetItems");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -93,27 +94,34 @@ namespace BlazorWebShop.Services
                 throw;
             }
         }
+
+        public void RaiseEventOnShoppingCartChanged(int totalQuantity)
+        {
+            if (OnShoppingCartChanged != null)
+            {
+                OnShoppingCartChanged.Invoke(totalQuantity);
+            }
+        }
+
         public async Task<CartItemDto> UpdateQuantity(CartItemQuantityUpdateDto cartItemQuantityUpdateDto)
         {
             try
             {
                 var jsonRequest = JsonConvert.SerializeObject(cartItemQuantityUpdateDto);
-
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json-patch+json");
 
-                var response = await _httpClient.PatchAsync($"api/ShoppingCart/{cartItemQuantityUpdateDto.CartItemId}",
-                    content);
+                var response = await httpClient.PatchAsync($"api/ShoppingCart/{cartItemQuantityUpdateDto.CartItemId}", content);
 
                 if (response.IsSuccessStatusCode)
                 {
                     return await response.Content.ReadFromJsonAsync<CartItemDto>();
                 }
-
                 return null;
+
             }
             catch (Exception)
             {
-                //log exception
+                //Log exception
                 throw;
             }
         }

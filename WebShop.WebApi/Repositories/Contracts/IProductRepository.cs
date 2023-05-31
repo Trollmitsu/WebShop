@@ -9,5 +9,7 @@ namespace WebShop.WebApi.Repositories.Contracts
         Task<Product> GetItem(int Id);
         Task<ProductCategory> GetCategory(int id);
 
+        Task<IEnumerable<Product>> GetItemsByCategory(int id);
+
     }
 }

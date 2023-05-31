@@ -10,11 +10,11 @@ namespace WebShop.WebApi.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductRepository productRepository;
 
         public ProductController(IProductRepository productRepository)
         {
-            _productRepository = productRepository;
+            this.productRepository = productRepository;
         }
 
         [HttpGet]
@@ -22,23 +22,26 @@ namespace WebShop.WebApi.Controllers
         {
             try
             {
-                var products = await _productRepository.GetItems();
-                var ProductCategories = await _productRepository.GetCategories();
+                var products = await this.productRepository.GetItems();
 
-                if (products == null || ProductCategories == null)
+
+                if (products == null)
                 {
                     return NotFound();
                 }
                 else
                 {
-                    var productDtos = products.ConvertToDto(ProductCategories);
+                    var productDtos = products.ConvertToDto();
+
                     return Ok(productDtos);
                 }
+
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                    "Error retrieving data from the database");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                "Error retrieving data from the database");
+
             }
         }
         [HttpGet("{id:int}")]
@@ -46,8 +49,7 @@ namespace WebShop.WebApi.Controllers
         {
             try
             {
-                var product = await _productRepository.GetItem(id);
-                
+                var product = await this.productRepository.GetItem(id);
 
                 if (product == null)
                 {
@@ -55,18 +57,61 @@ namespace WebShop.WebApi.Controllers
                 }
                 else
                 {
-                    var productCategory = await _productRepository.GetCategory(product.CategoryId);
 
-                    var productDtos = product.ConvertToDto(productCategory);
+                    var productDto = product.ConvertToDto();
 
-                    return Ok(productDtos);
+                    return Ok(productDto);
                 }
+
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error retrieving data from the database");
+                                "Error retrieving data from the database");
+
             }
         }
+
+        [HttpGet]
+        [Route(nameof(GetProductCategories))]
+        public async Task<ActionResult<IEnumerable<ProductCategoryDto>>> GetProductCategories()
+        {
+            try
+            {
+                var productCategories = await productRepository.GetCategories();
+
+                var productCategoryDtos = productCategories.ConvertToDto();
+
+                return Ok(productCategoryDtos);
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                "Error retrieving data from the database");
+            }
+
+        }
+
+        [HttpGet]
+        [Route("{categoryId}/GetItemsByCategory")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetItemsByCategory(int categoryId)
+        {
+            try
+            {
+                var products = await productRepository.GetItemsByCategory(categoryId);
+
+                var productDtos = products.ConvertToDto();
+
+                return Ok(productDtos);
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                "Error retrieving data from the database");
+            }
+        }
+
     }
 }
